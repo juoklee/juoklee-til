@@ -78,7 +78,9 @@ public class MyRunnable {
 > **start(), run(), join()**
 
 `void start()` : thread를 시작하고 자동으로 run()을 호출한다.
+
 `void run()` : 오버라이딩 된 run()을 실행한다.
+
 `void join()` : 다른 thread가 종료될 때까지 기다리게 하는 메서드이다.
  
  
@@ -95,3 +97,5 @@ public class MyRunnable {
 [Thread(쓰레드)의 정의와 사용법 정리](https://blog.naver.com/zion830/221393808512)
 
 [자바 쓰레드 시작하기](https://parkcheolu.tistory.com/10)
+
+[점프 투 자바 07-05 쓰레드(Thread)](https://wikidocs.net/230)
