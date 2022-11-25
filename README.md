@@ -1,7 +1,7 @@
 # TIL(Today I Learned)
 
 ### Java
-- [Java Thread Usage](https://github.com/juoklee/juoklee-til/blob/main/Java/java_thread_usage.md)
+- [[2022.10.23] Java Thread Usage](https://github.com/juoklee/juoklee-til/blob/main/Java/java_thread_usage.md)
 
 
 ### Conference
