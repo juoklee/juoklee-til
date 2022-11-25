@@ -1,8 +1,8 @@
 # TIL(Today I Learned)
 
 ### Java
-- [Java Thread Usage](https://github.com/juoklee/juoklee-til/blob/main/java/java_thread_usage.md)
+- [Java Thread Usage](https://github.com/juoklee/juoklee-til/blob/main/Java/java_thread_usage.md)
 
 
 ### Conference
-- [NHN FORWARD 22](https://github.com/juoklee/juoklee-til/blob/main/Conference/NHN_FORWARD_22.md)
+- [[2022.10.24] NHN FORWARD 22 ](https://github.com/juoklee/juoklee-til/blob/main/Conference/NHN_FORWARD_22.md)
