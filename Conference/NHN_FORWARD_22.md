@@ -351,10 +351,40 @@
                                  new Message(i son. getBytes (StandardCharsets. UTF_ 8) new CorrelationData(UUID. randomUUIDO. toString()));
       ```
     5. confirmCallback을 사용한 코드
+        ```java
+            @Bean
+            public RabbitTemplate rabbitTemplate (ConnectionFactory rabbitConnectionFactory) {
+                RabbitTemplate rabbitTemplate = new RabbitTemplate(rabbitConnectionFactory);
+    
+                //  ...
+                rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
+                    if (lack) {
+                        Message message = correlationData. getReturned () • getMessage ();
+                        byte[] body = message.getBody);
+                        log.error("Fail to produce. ID: {}", correlationData. getId());
+                    }
+                });
+                return rabbitTemplate;
+            }
+        ```
     6. Cunsumer Ack
     7. @RabbitListener
-7. Kafka
+7. Kafka를 사용한 전달 방법
     1. projucer confirm
+        ```java
+            @Slf4j
+            @Component
+            @RequiredArgsConstructor
+            public class Producer {
+    
+                public void sendEvent (CreateTaskEvent event){
+                    ListenableFuture<SendResult<String, CreateTaskEvent>> future kafkaTemplate.send (TOPIC_TASK, event);
+                    future.addCallback(
+                        result -> log.info("offset : {)", result. getRecordMetadata() .offset ()), throwable -> log.error("fail to publish", throwable)
+                    );
+                }
+            }
+        ```
     2. consumer ACK
 8. 마무리
     1. event driven architecture의 기본은 데이터 전달
@@ -431,6 +461,7 @@
     2. 바이블 쿸북
         1. 클린 아키텍처(로버트 마틴), 만들면서 배우는 클린 아키텍처
 5. 헥사고날 아키텍처
+    ![image](https://user-images.githubusercontent.com/72849620/203903995-ed8302db-71c8-474e-a839-e5e43854dacb.png)
 6. 아키텍처별 패키지
     1. 계층형 아키텍처
     2. 기능기반 패키지
@@ -469,6 +500,9 @@
 
 1. 샵바이
     1. 클라우드 이커머스 플랫폼
+    2. 마이크로 서비스 구조
+        ![image](https://user-images.githubusercontent.com/72849620/203904064-82d7d8ca-6037-47e8-99d5-a7516d6c0c34.png)
+
 2. 쿠버네티스로 전환
     1. 마이크로서비스가 너무 많다
         - 고정적인 스케줄링, 잦은 스케일링, 관리의 어려움 등
@@ -479,16 +513,19 @@
     1. 코드변경 없이 쿠버네티스로 전환
     2. 쿠버네티스에서 제공하는 기능을 적극 활용
     3. dependency
-        - API gateway = spring cloud gateway → ingress
-        - 내부통신 = spring cliud openfeign
-        - 서비스 레지스트리 = zookeeper → service
-        - 프로퍼티 파일 관리 = spring
+        - API Gateway = Spring Cloud Gateway → Ingress
+        - 내부통신 = Spring Cloud Openfeign → Spring Cloud OpenFeign
+        - 서비스 레지스트리 = Spring Cloud Zookeeper 
+        - 서비스 레지스트리 = Zookeeper → Service
+        - 프로퍼티 파일 관리 = Spring Cloud Config → ConfigMap, Secret
+        - MySQL, Mongo, Kafka, Redis등 = 사용중
     4. 서비스 레지스트리
         - spring cloud openfeign: 어노테이션 기반으로 작성되는 선언적 REST client
         - zooleeper? 쿠버네티스 service
         - spring cloud kubernetes: spring cloud에서 제공하는 인터페이스 중 몇가지에 대해 쿠버네티스 리소스를 활용한 구현체를 제공
         - spring cliud gateway: spring framework5 기반, host&path 기반 라우팅 지원, custom filter 구현 가능, path rewrite
         - API  gateway : ingress VS spring cliud gateway
+    5. 프로퍼티 파일 관리
 4. 쿠버네티스에 배포하기
     1. kubernetes objects
     2. helm으로 패키징 : 쿠버네티스 리소스 패키지 도구. chart로 관리
@@ -502,6 +539,15 @@
 1. DDD에 대한 오해
     1. ~~DDD는 전술적 패턴이다.~~
         - 전략적 설계가 중요하다.
+    
+        |설계|전략적 설계|전술적 설계|
+        |-----|-----|-----|
+        |범위|전반적|특정 Bounded-Context|
+        |목적|문제 도메인을 해결영역으로|풍부한 도메인 모델 적용|
+        |메타포|전쟁에서 전략|전투에서 전술|
+        |주요 패턴|Bounded-Context, Ubiquitous-Language, Aggregate, Domain-Event|
+        |수행 방식|접근법|상대적으로 방법론에 가까움|
+    
     2. 단순한 서비스에는 적용하지 않는 것이 좋다.
 2. Domain Driven Design 도메인 주도 설계
 3. 전략적 설계
@@ -511,7 +557,10 @@
     3. 문제 도메인에서 핵심 하위 도메인 식별하기
         ex) 핵심: 예매 / 지원: 도면, 상품 / 일반: 회원
     4. 하위 도메인 유형: 핵심(난이도 최상, in-house), 지원(난이도 하, in-house), 일반(난이도 상, 솔루션구매)
-    5. 해결공간: 개발 영역의 설계가 시작된다. 
+    5. 해결공간: 개발 영역의 설계가 시작된다.
+    
+        ![image](https://user-images.githubusercontent.com/72849620/203905570-96a61d6e-4654-4095-b0b0-c3641f2eb3a9.png)
+    
 4. 브라운 필드 전략적 설계
     1. big ball of mud: 복잡성 증가
 5. 전략적 설계시 유용한 도구
@@ -525,6 +574,9 @@
     3. 핵심 하위 도메인 식별
 7. bounded-Context
     1. 모델 무결성
+    
+       ![image](https://user-images.githubusercontent.com/72849620/203905982-8758f032-8c7a-4880-bc9d-1d2eebb03440.png)
+
 8. 콘웨이 법칙
     1. 소프트웨어의 구조는 해당 소프트웨어를 개발하는 조직의 구조를 따라간다.
 9. 역 콘웨이 법칙
