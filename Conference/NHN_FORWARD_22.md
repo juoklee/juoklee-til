@@ -4,8 +4,8 @@
 ## **편안한 휴식 시간을 지켜줄 안정적인 백엔드 운영과 개발 기법**
 
 1. 개발담당자가 서비스를 운영한다.
-  1. 장점: 빠른 장애대응 / 최적의 서버 구성 / 설계,개발 단계에서 운영 고려
-  2. 단점: 불안: 언제 문제가 발생할 지 모른다. / 피로: 운영이슈 해결 + 개발 / 비 전문성 : 개발과 운영 둘 다 전문성이 필요하다.
+    1. 장점: 빠른 장애대응 / 최적의 서버 구성 / 설계,개발 단계에서 운영 고려
+    2. 단점: 불안: 언제 문제가 발생할 지 모른다. / 피로: 운영이슈 해결 + 개발 / 비 전문성 : 개발과 운영 둘 다 전문성이 필요하다.
 2. 사용자가 많아지면서 장애가 발생하기 시작
     1. 자동 재시작(self-healing)
         - 서버의 재시작이 필요한 경우?
@@ -15,11 +15,56 @@
             - 서버에서 데드락이 발생한 경우
         - 해결 작업 무한루프: 장애발생 → 전파 → CPU, Memory, disk 등 리소스 확인, network 확인 → 로그 확인(OutOfMemoryError체크, 주요서비스 연동 체크) → 힙덤프 스레드 덤프 남기기 → 서버 재시작
             - JVM 프로세스는 OutOfMemoryError에도 죽지 않습니다.
-            - <img width="933" src="">
+            - 자동 재시작의 구성 - _is_process_alive.sh_
+              ```bash
+               #!/usr/bin/env bash
+
+               function 실행중인가요
+               {
+                if [-s $DOORAY_PID_FILE ]
+                then
+                  ps -p $(cat $DOORAY_PID_FILE) > /dev/null
+                  return $?
+                else
+                  return 1
+                fi
+               }
+              ```
+            - JVM 실행 옵션 _-XX:+ExitOnOutOfMemoryError_
+              ```bash
+               #!/usr/bin/env bash
+
+               java -Xmx10m \
+                -XX:+HeapDumpOnOutOfMemoryError \
+                -XX: +ExitOnOutOfMemoryError \
+                -jar may_cause_oom.jar
+              ```
+            - JVM 실행의 옵션 _-XX:OnOutOfMemoryError (Introducedin 1.4.2 update 12, 6)_
+              ```bash
+               #!/usr/bin/env bash
+
+               java -Xmx10m \
+                -XX:+HeapDumpOnOutOfMemoryError \
+                -jar may_cause_oom.jar
+              ```    
         - 쿠버네티스의 livenessProbe 사용
             - pod - service, kubelet이라는 데몬이 livenessProbe의 pod를 계속확인 → 문제가 발생하면 pod 삭제하고 새로운 pod를 올린다.
         - springboot actuator healthcheck endpoint
             - 주요기능 점검 기능
+              ```bash
+                #!/usr/bin/env bash
+                
+                funcion 건강한가요
+                {
+                  health=$(curl -I http://localhost:9999/actuator/health 2>/dev/null | head -n 1 | cut -d$'' -f2)
+                  if [ $health -eq "200" ]
+                  then
+                    return 0
+                  else
+                    return 1
+                  fi
+                }
+              ```
         - 효과: 무중단 서비스 유지 
 3. 과부하를 처리하는 방법   
     1. cascading faiures
@@ -38,9 +83,29 @@
     4. 429 적용(Too many Request)
         - 기준을 초과한 상황에서 응답 거부
         - 사용자에게 노출되지 않는 api에 적용
+          - <image width="300" src="https://user-images.githubusercontent.com/72849620/203883237-52e4fcd7-8b48-40b8-aff5-790322cbedd6.png">
     5. 기준적용
         - 초당요청량 / CPU 사용량:응답 지연으로 백엔드에서 병목이 발생하면 cascase failure 유발 / Active thread수
         - active thread 사용: Spring boot
+          ```java
+            /*ThrottlingByThread.java*/
+  
+            private static final double MAX_BUSY_THREAD_RATIO_FOR_MAIL_ RECEIVE = 85;
+            private final MetricsEndpoint metricsEndpoint;
+  
+            public void checkBusyThread() {
+              MetricResponse busyThreadMetric = metricsEndpoint .metric("tomcat. threads busy", null);
+              MetricResponse maxThreadMetric = metricsEndpoint.metric("tomcat . threads. config-max", null);
+            
+              //생략 ..
+        
+              double busyRatio = busyThreadCount / maxThreadCount * 100;
+  
+              if (busyRatio > NAX_ BUSY_ THREAD_ RATIO_FOR MAIL_ RECEIVE) {
+                throw new TooManyRequestException("busy: " + busythreadCount + ", ratio: " + busyRatio);
+              }
+            }
+          ```
 4. http cache
     1. 브라우저의 http cache
         - 네트워크 리소스를 줄여 빠르게 페이지를 로딩하는
@@ -49,17 +114,154 @@
         - etag header: 응답하는 리소스의 버전을 제공
         - if-none-match header: etag를 비교하여 다른 경우에만 응답을 제공
         - eTag 구현: webRequest 사용
+          ```java
+            // ETag를 응답에 포함, 검증
+            @GetMapping (value = "/members/{memberId}/resources")
+            public ResponseEntity<List<Resource>> list(@PathVariable("memberId") final Long memberId, WebRequest webRequest) {
+                // ... Long updatedAt = ...
+                if (webRequest. checkNotModified (genETag (updatedAt))) (
+                  // shortcut exit - no further processing necessary
+                  return null;
+                }
+                // ...List‹Resource> resources = ...
+            }
+          ```
     3. apache storage backend
         - 캐시한 response body를 저장할 공간이 필요
     4. http cache 주의
         - shared cache 주의
         - method: get에서만 적용됨
         - storage backend: 데이터를 많이 보유할수록 hit 할 확률이 높아짐
+    5. 코드
+        - 효율적인 HTTPCache 서비스 구현
+          ```java
+            // Cache Control 속성 설정
+  
+            @GetMapping(value = "/members/{memberId}/resources")
+            public ResponseEntity<List<Resource»> list(@PathVariable("memberId") final Long memberId, WebRequest webRequest) {
+              
+              // ...List<Resource> resources = ...
+  
+              return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(0, TimeUnit.MINUTES)
+                .cachePrivate()
+                .mustRevalidate())
+                .body (resources);
+          ```
+        - 서버 간 HTTPCache 클라이언트 구현
+          ```java
+            CachingHttpClients.custom()
+                .setHttpCacheStorage(
+                    new EhcacheHttpCacheStorage (httpClientCache, CacheConfig.custom().setMaxUpdateRetries(2).build(),
+                          new DoorayHttpCacheEntrySerializer()
+                    )
+                )
+                .setCacheConfig(
+                    CacheConfig.custom().setMaxCacheEntries(Integer.MAX_VALUE)
+                        .setMaxObjectSize(20L # 1024L # 1024L)
+                        .setsharedCache(false)
+                        .build()
+                )
+          ```
+          ```java
+            ## ehcache. xml
+            ‹cache name="httpClientCache"
+                  maxEntriesLocalHeap="20"
+                  maxBytesLocalDisk="10g" 
+                  eternal="false" 
+                  timeTold leSeconds="1800" 
+                  timeToLiveSeconds="1800" 
+                  diskExpiryThreadIntervalSeconds="5" 
+                  memoryStoreEvictionPolicy="LRU" 
+                  transactionalMode="off" 
+                  overflowTo0ffHeap="false" 
+                  statistics-"true">
+                  ‹persistence strategy="localTempSwap"/>
+            </cache>
+          ```
 5. netty writing backpressure
     1. netty로 구현한 소켓서버
         - 기능: 사용자 클라이언트용 소켓서비스
         - TCP 기반
     2. 코드리뷰
+        ```java
+          public class DoorayWriteHandler extends ChannelInboundHandlerAdapter {
+  
+              @Override
+              public void channelActive(ChannelHandlerContext ctx) throws Exception {
+
+                Iterator<Content> contents = getcontents(); // 10,000 건 이상...
+  
+                while (contents.hasNext()) {
+                  ctx.channel().writeAndFlush(contents.next());
+                }
+              }
+          }
+        ```
+  
+        ```java
+          public class DoorayWriteHandler extends ChannelInboundHandlerAdapter {
+                                  
+            @Override
+            public void channelActive(ChannelHandlerContext ctx) throws Exception {
+                                  
+                Iterator<Content> contents = getcontents(); // 10,000 건 이상...
+                
+                while(contents.hasNext()) {
+                  Thread.sleep(10L): // 이건 좀... 그래도 OutOfMemoryError는 막아봅시다.
+                  ctx.channel().writeAndFlush(contents.next());
+                }
+            }
+          }
+        ```
+  
+        ```java
+          public class DoorayWriteHandler extends ChannelInboundHandlerAdapter {
+    
+            @Override
+            public void channelActive (ChannelHandlerContext ctx) throws Exception {
+              processIfPossible(ctx. channel());
+            }
+  
+            @Override
+            public void channeWritabLilityChanged(ChannelHandlerContext ctx) throws Exception {
+              processIfPossible(ctx. channeL());
+            }
+  
+            //다음 페이지..
+        ```
+  
+        ```java
+          public class DoorayWriteHandler extends ChannelInboundHandlerAdapter {
+  
+            private volatile int id = 0
+  
+            //필요하면 멈추거나 다시 시작할 수 있어야 한다.
+  
+            protected void processIfPossible(Channel channel) {
+              Iterator‹Content> contents = getContentsFrom(id);
+  
+              while(contents.hasNext() && channel.isWritable()) {
+                Content content = contents.next;
+                this.id = content .getId();
+                ctx.channel() .writeAndFlush(content);
+              }
+            }
+          }
+        ```
+  
+        ```java
+          public class BootStrap {
+  
+            public static void main(String[] arg) {
+              ServerBootstrap b = new ServerBootstrap);
+  
+              //MATER_ MARK 를 Low: 1024, high: 8192 로 설정합니다.
+              b.childoption( ChanneLOption.MRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1*1024, 8*1024) );
+            }
+          }
+        ```
+
 6. 마무리
     1. 지속적인 작업: 테스트 코드 작성
     2. 가시화: 지표확보, 성과와 개선방향을 얻을 수 있음
@@ -104,6 +306,30 @@
 5. RDB를 사용하는 애플리케이션에서 전달 방법
     1. @transactionalEventilistner
     2. @Retryable
+      ```java
+        @Service
+        public class EventHandler {
+  
+          @Retryable(
+            maxAttempts = 3,
+            backoff = @Backoff (delay = 100L)
+          )
+          @TransactionalEventListener(phase = TransactionPhase. AFTER. COMMIT)
+          public void propagate (CreateTaskEvent event) {
+            // 이벤트 발생 로직
+            // + restTemplate.execute(...);
+            // + rabbit Template. send(...)
+          }
+        }
+      ```
+  
+      |필드명|데이터타입|설명
+      |-------------|---------|-------------|
+      |event_id|BIGINT|이벤트의 순서를 보장|
+      |created_at|Datetime(3~6)|이벤트 발생 시간|
+      |status|smallint|Ready(0) /Done(1)|
+      |payload|jsonb|JSON 타입의 Message payload|
+      
     3. 마이크로 아키텍처 패턴
         - Transactional OutboxPattern
         - Polling publisher pattern
@@ -114,6 +340,16 @@
     2. ack를 메시지 응답 처리 메커니즘
     3. AMQP
     4. correlationData를 사용한 코드
+      ```java
+        @Service
+        public class MessagePublisher {
+  
+          public void sendMessage (CreateTaskEvent createTaskEvent) throws JsonProcessingException
+            String ison = objectMapper.writeValueAsString (createTaskEvent);
+            rabbitTemplate.send(EXCHANGE_NAME,
+                                 ROUTING_KEY,
+                                 new Message(i son. getBytes (StandardCharsets. UTF_ 8) new CorrelationData(UUID. randomUUIDO. toString()));
+      ```
     5. confirmCallback을 사용한 코드
     6. Cunsumer Ack
     7. @RabbitListener
