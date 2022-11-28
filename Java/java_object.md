@@ -84,7 +84,7 @@
   
   <br/>
   
-  **+)Override: eclipse를 통해서 생성**
+  **+) Override: eclipse를 통해서 재정의**
   
   ![image](https://user-images.githubusercontent.com/72849620/204213266-b169e69b-9524-4b53-8981-a49a023f8577.png)
   
@@ -117,7 +117,31 @@
   <br/>
   
 **3. `toString()` 객체가 가진 값을 문자열로 반환**
-  **Override: eclipse를 통해서 생성**
+  ```java
+    public static void main(String[] args) {
+      Student s1 = new Student();
+      s1.name = "juok";
+      s1.number = "1234";
+      s1.birthYear = 1998;
+
+      Student s2 = new Student();
+      s2.name = "juok";
+      s2.number = "1234";
+      s2.birthYear = 1998;
+
+      System.out.println("s1.toString():" + s1.toString());
+      System.out.println("s2.toString():" + s2.toString());
+
+    }
+  ```
+  ```console
+    s1.toString():javaStudent.Student@170861 //의미없는 디폴트 값
+    s2.toString():javaStudent.Student@170861
+  ```
+
+  <br/>
+
+  **+) Override: eclipse를 통해서 재정의**
   
   ![image](https://user-images.githubusercontent.com/72849620/204213786-011a6f15-9c50-4569-a822-39c3d01178ab.png)
   
@@ -126,6 +150,10 @@
     public String toString() {
       return "Student [name=" + name + ", number=" + number + ", birthYear=" + birthYear + "]";
     }
+  ```
+  ```console
+    s1.toString():Student [name=juok, number=1234, birthYear=1998]
+    s2.toString():Student [name=juok, number=1234, birthYear=1998]
   ```
   <br/>
   
