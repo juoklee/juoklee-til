@@ -1,13 +1,13 @@
-# Object와 오버라이딩
+# Object와 Overriding
 
 <br/>
 
 > **Object 클래스?**
 
-- java.lang.Object
+- `java.lang.Object
 - 모든 클래스의 최상위 클래스
-- 아무것도 상속받지 않으면 자동으로 Object를 상속
-- Object가 가지고 있는 메소드는 모든 클래스에서 다 사용할 수 있다는 것을 의미.
+- 아무것도 상속받지 않으면 자동으로 `Object`를 상속
+- `Object`가 가지고 있는 메소드는 모든 클래스에서 다 사용할 수 있다는 것을 의미.
 
 
 
@@ -15,7 +15,7 @@
 
 > **메서드**
 
-1. `equals()` 객체가 가진 값을 비교할 때 사용
+**1. `equals()` 객체가 가진 값을 비교할 때 사용**
   ```java
     package javaStudent;
 
@@ -43,7 +43,15 @@
       }
     }
   ```
-2. `hashCode()` 객체의 해시코드 값 반환
+  ```console
+  s1 != s2
+  ```
+  - `equals()`는 주소값이 다른 객체는 서로 다른 객체로 판단한다.
+  - 두 객체를 같도록 하려면 재정의(override)해야 한다.
+  
+  <br/>
+  
+**2. `hashCode()` 객체의 해시코드 값 반환**
   ```java
     package javaStudent;
 
@@ -69,7 +77,15 @@
       }
     }
   ```
-  +) eclipse를 통해서 생성
+  ```console
+    s1.hashCode: 1365202186
+    s2.hashCode: 1651191114
+  ```
+  
+  <br/>
+  
+  **+)Override: eclipse를 통해서 생성**
+  
     ![image](https://user-images.githubusercontent.com/72849620/204213266-b169e69b-9524-4b53-8981-a49a023f8577.png)
   
   ```java
@@ -90,8 +106,18 @@
       return Objects.equals(number, other.number);
     }
   ```
-3. `toString()` 객체가 가진 값을 문자열로 반환
-  eclipse를 통해서 생성
+  ```console
+    s1 == s2
+    s1.hashCode: 1509473
+    s2.hashCode: 1509473
+  ```
+  - `equals`를 재정의한 클래스는 `hashcode`도 반드시 재정의한다.
+  - equals가 두 객체를 같다고 판단했으면, 두 객체의 hashCode 값은 항상 같다.
+  
+  <br/>
+  
+**3. `toString()` 객체가 가진 값을 문자열로 반환**
+  **Override: eclipse를 통해서 생성**
   
     ![image](https://user-images.githubusercontent.com/72849620/204213786-011a6f15-9c50-4569-a822-39c3d01178ab.png)
   
@@ -101,13 +127,17 @@
       return "Student [name=" + name + ", number=" + number + ", birthYear=" + birthYear + "]";
     }
   ```
-
+  <br/>
+  
+  
+  
 
 <br/><br/>
 
 > **참고**
 
 [자바 중급 강의](https://school.programmers.co.kr/learn/courses/9)
+[[Java] equals() & hashcode() 메서드는 언제 재정의해야 할까?](https://velog.io/@sonypark/Java-equals-hascode-메서드는-언제-재정의해야-할까)
 
 <br/>
 
