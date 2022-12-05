@@ -9,9 +9,9 @@
 
 
 ### CS
-- [[2022.12.05] network](https://github.com/juoklee/juoklee-til/blob/main/sw/Software_Architecture.md)
+- [[2022.12.05] CS Network](https://github.com/juoklee/juoklee-til/blob/main/CS/Network_01.md)
 
 
 
 ### SW
-- [[2022.11.25] Software Architecture](https://github.com/juoklee/juoklee-til/blob/main/CS/Network_01.md)
+- [[2022.11.25] Software Architecture](https://github.com/juoklee/juoklee-til/blob/main/SW/Software_Architecture.md)
