@@ -49,5 +49,5 @@ LAN vs WAN
 <br/><br/>
 
 > **참고**
-
+[[네트워크] 네트워크 기초 ](https://velog.io/@jubby/네트워크-네트워크-기초-지식)
 [모두의 네트워크 - 미츠구치 카츠야](http://www.yes24.com/Product/Goods/61794014)
