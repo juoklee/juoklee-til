@@ -12,7 +12,7 @@
 
 
 ### CS
-- [[2022.12.05] CS Network](https://github.com/juoklee/juoklee-til/blob/main/CS/Network_01.md)
+- [[2022.12.05] CS Network_01](https://github.com/juoklee/juoklee-til/blob/main/CS/Network_01.md)
 
 
 
