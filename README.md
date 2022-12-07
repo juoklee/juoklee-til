@@ -10,7 +10,7 @@
 
 
 ### DB
-- [[2022.12.06] DB Link](https://github.com/juoklee/juoklee-til/blob/main/DB/DB%20Link.md)
+- [[2022.12.06] DB Link](https://github.com/juoklee/juoklee-til/blob/main/DB/DB_Link.md)
 
 
 ### CS
