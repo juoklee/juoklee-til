@@ -6,7 +6,7 @@
 
 
 ### Spring
-- [[2022.12.07] Spring Interceptor](https://github.com/juoklee/juoklee-til/blob/main/Spring/spring_interceptor)
+- [[2022.12.07] Spring Interceptor](https://github.com/juoklee/juoklee-til/blob/main/Spring/spring_interceptor.md)
 
 
 ### DB
